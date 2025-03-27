@@ -1,0 +1,18 @@
+{
+  "dependencies": {
+    "@aws-sdk/client-s3": "3.726.1",
+    "@colors/colors": "^1.6.0",
+    "@sentry/node": "^9.9.0",
+    "@types/node": "^22.13.14",
+    "axios": "^1.8.4",
+    "node-cron": "^3.0.3",
+    "zod": "^3.24.2"
+  },
+  "devDependencies": {
+    "@types/node-cron": "^3.0.11",
+    "nodemon": "^3.1.9"
+  },
+  "scripts": {
+    "dev": "bunx nodemon -e ts --watch 'src/**/*.ts' --exec 'bun ./src/index.ts'"
+  }
+}
