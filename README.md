@@ -22,7 +22,7 @@ S3_BUCKET=
 
 # Backups Configuration
 BACKUPS_CRON_SCHEDULE= # "0 0 * * *" (required)
-BACKUPS_MAX_KEEP_COUNT= # the number of backups to keep (required)
+BACKUPS_MAX_KEEP_COUNT= # the number of latest backups to keep (defaults to 5)
 
 # a unique identifier for the backup file. 
 # the file format with identifier is
