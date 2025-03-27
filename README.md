@@ -50,7 +50,7 @@ You can install `pg-backup` using:
 ```bash
 docker run -d \
     -v "/path/to/.env:/app/.env" \
-    andriotis/pg-backup
+    andriotisnikos1/pg-backup
 ```
 
 ### Run from source
