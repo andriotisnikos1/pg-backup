@@ -7,7 +7,7 @@ env DEBIAN_FRONTEND=noninteractive
 
 # install packages and bun
 run apt-get update -y && \
-    apt-get install -y curl unzip ca-certificates postgresql-client --no-install-recommends && \
+    apt-get install -y curl unzip ca-certificates --no-install-recommends && \
     rm -rf /var/lib/apt/lists/*
 
 run apt update && \
