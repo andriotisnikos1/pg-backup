@@ -37,7 +37,7 @@ POSTGRES_URL= # required
 # (Optional) Sentry Configuration
 SENTRY_ENABLED=# "true" | "false"
 SENTRY_DSN= # required if SENTRY_ENABLED=true
-MONITOR_SLUG= # required if SENTRY_ENABLED=true
+SENTRY_MONITOR_SLUG= # required if SENTRY_ENABLED=true
 ```
 
 ## Installation
