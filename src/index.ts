@@ -43,6 +43,12 @@ cron.schedule(env.backups.cron_schedule, async () => {
         const backupStatus = await backup(fullpath, filename);
         if (!backupStatus) {
             console.error(colors.red("error:"), "Backup failed. Exiting...");
+            if (env.sentry.enabled === 'true') {
+                Sentry.captureCheckIn({
+                    monitorSlug: env.sentry.monitor_slug!,
+                    status: "error"
+                })
+            }
             return
         }
         // upload backup

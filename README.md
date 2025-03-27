@@ -56,7 +56,9 @@ docker run -d \
 
 ### Run from source
 
-`Note`: Run from source requires [bun](https://bun.sh)
+`Note`: Run from source requires:
+- [bun](https://bun.sh) to be installed
+- `pg_dump`, the version matching your PostgreSQL version, to be installed
 
 ```bash
 git clone https://github.com/andriotisnikos1/pg-backup
@@ -68,3 +70,9 @@ cd pg-backup
 bun src/index.ts
 ```
 
+# Using for versions other than PostgreSQL 16 with docker
+If you are using a version of Postgres other than 16 (the default build), you can build the image yourself from source:
+
+```bash
+docker build -t pg-backup --build-arg POSTGRES_VERSION=my-postgres-version .
+```
