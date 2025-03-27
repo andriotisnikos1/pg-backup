@@ -29,15 +29,20 @@ jobs:
             echo "$DOCKERHUB_PASSWORD" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
 
       - run:
-          name: Build and Push Multi-Arch Image
+          name: Build and Push Multi-Arch Images for PG Versions
           command: |
-            IMAGE_NAME=myusername/myimage
-            TAG=latest
-
+            IMAGE_NAME=andriotisnikos1/pg-backup
+            for VERSION in 15 14; do
+              docker buildx build \
+                --platform linux/amd64,linux/arm64 \
+                --build-arg POSTGRES_VERSION=$VERSION \
+                --tag $IMAGE_NAME:pg-$VERSION \
+                --push .
+            done
             docker buildx build \
-              --platform linux/amd64,linux/arm64 \
-              --tag $IMAGE_NAME:$TAG \
-              --push .
+                --platform linux/amd64,linux/arm64 \
+                --tag $IMAGE_NAME \
+                --push .
 
 workflows:
   build_and_push:
