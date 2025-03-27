@@ -35,7 +35,7 @@ export const env = await envSchema.parseAsync({
     },
     backups: {
         cron_schedule: process.env.BACKUPS_CRON_SCHEDULE!,
-        max_backups: process.env.BACKUPS_MAX_KEEP ? parseInt(process.env.BACKUPS_MAX_KEEP) : 5,
+        max_backups: process.env.BACKUPS_MAX_KEEP_COUNT ? parseInt(process.env.BACKUPS_MAX_KEEP_COUNT) : 5,
         file_identifier: process.env.BACKUPS_FILE_IDENTIFIER
     },
     postgres: {
