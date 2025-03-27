@@ -11,7 +11,7 @@
 Copy the `.env.preset` file to `.env` and fill in the required fields.
 
 ```dotenv
-NODE_ENV=# "development" | "production"
+NODE_ENV=# "development" | "production" (optional: defaults to "production")
 
 # S3 Configuration (required)
 S3_REGION=
@@ -22,7 +22,7 @@ S3_BUCKET=
 
 # Backups Configuration
 BACKUPS_CRON_SCHEDULE= # "0 0 * * *" (required)
-BACKUPS_MAX_KEEP_COUNT= # the ma number of backups to keep (required)
+BACKUPS_MAX_KEEP_COUNT= # the number of backups to keep (required)
 
 # a unique identifier for the backup file. 
 # the file format with identifier is
