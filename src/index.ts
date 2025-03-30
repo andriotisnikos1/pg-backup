@@ -5,7 +5,7 @@ import cron from 'node-cron';
 import { env } from './central.config.js';
 import { s3 } from './s3.js';
 import fsp from 'fs/promises';
-import { DeleteObjectCommand, ListObjectsV2Command, PutObjectCommand } from '@aws-sdk/client-s3';
+import { DeleteObjectCommand, ListObjectsV2Command, ListObjectVersionsCommand, PutObjectCommand } from '@aws-sdk/client-s3';
 import backup from './backup.js';
 import colors from '@colors/colors';
 import * as Sentry from '@sentry/node';
@@ -71,10 +71,28 @@ cron.schedule(env.backups.cron_schedule, async () => {
         const toDelete = sortedTmstpDesc.slice(env.backups.max_backups)
         
         const deletePromises = toDelete.map(async object => {
-             await s3.send(new DeleteObjectCommand({
-                Bucket: env.s3.bucketName,
-                Key: object.Key!
-            }))
+            try {
+                const fileVersions = await s3.send(new ListObjectVersionsCommand({
+                    Bucket: env.s3.bucketName,
+                    Prefix: object.Key!
+                }))
+                for await (const version of fileVersions.Versions!) {
+                    await s3.send(new DeleteObjectCommand({
+                        Bucket: env.s3.bucketName,
+                        Key: object.Key!,
+                        VersionId: version.VersionId
+                    }))
+                }
+                
+            } catch (error) {
+                await s3.send(new DeleteObjectCommand({
+                    Bucket: env.s3.bucketName,
+                    Key: object.Key!
+                }))
+            }
+
+            
+             
             console.log(colors.green("backup:"), "Deleted old backup", object.Key)
         })
         await Promise.all(deletePromises)
