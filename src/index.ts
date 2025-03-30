@@ -69,13 +69,15 @@ cron.schedule(env.backups.cron_schedule, async () => {
             return (a.LastModified!.getTime() > b.LastModified!.getTime()) ? -1 : 1
         })
         const toDelete = sortedTmstpDesc.slice(env.backups.max_backups)
-        for (const object of toDelete) {
-            await s3.send(new DeleteObjectCommand({
+        
+        const deletePromises = toDelete.map(async object => {
+             await s3.send(new DeleteObjectCommand({
                 Bucket: env.s3.bucketName,
                 Key: object.Key!
             }))
             console.log(colors.green("backup:"), "Deleted old backup", object.Key)
-        }
+        })
+        await Promise.all(deletePromises)
         // notify
         console.log(colors.green("backup:"), "Backup completed successfully.")
         console.log(colors.cyan("-".repeat(15)))
