@@ -2,6 +2,7 @@
   "name": "pg-backup",
   "dependencies": {
     "@aws-sdk/client-s3": "3.726.1",
+    "@aws-sdk/lib-storage": "^3.782.0",
     "@colors/colors": "^1.6.0",
     "@sentry/node": "^9.9.0",
     "@types/node": "^22.13.14",

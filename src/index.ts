@@ -1,14 +1,12 @@
-import crypto from 'crypto';
-import os from 'os';
-import "./central.config.js";
-import cron from 'node-cron';
-import { env } from './central.config.js';
-import { s3 } from './s3.js';
-import fsp from 'fs/promises';
-import { DeleteObjectCommand, ListObjectsV2Command, ListObjectVersionsCommand, PutObjectCommand } from '@aws-sdk/client-s3';
-import backup from './backup.js';
 import colors from '@colors/colors';
 import * as Sentry from '@sentry/node';
+import cron from 'node-cron';
+import backup from './backup.js';
+import "./central.config.js";
+import { env } from './central.config.js';
+import deleteOldBackups from './lib/deleteOldBackups.js';
+import getConfig from "./lib/getConfig.js";
+import uploadBackup from './lib/uploadBackup.js';
 
 if (env.sentry.enabled === 'true') {
     if (!env.sentry.dsn) {
@@ -32,70 +30,18 @@ cron.schedule(env.backups.cron_schedule, async () => {
         })
     }
     try {
-        const tmpdir = os.tmpdir();
-        const ID = crypto.randomBytes(16).toString('hex');
-        const date = new Date().toISOString().split('T')[0];
-        const filename = `${date}-${ID}${env.backups.file_identifier ? `.${env.backups.file_identifier}` : ""}.dump`;
-        const fullpath = `${tmpdir}/${filename}`;
+        const {fullpath, filename} = getConfig()
         // notify start
         console.log(colors.green("backup:"), "Starting backup...");
         // get backup
         const backupStatus = await backup(fullpath, filename);
-        if (!backupStatus) {
-            console.error(colors.red("error:"), "Backup failed. Exiting...");
-            if (env.sentry.enabled === 'true') {
-                Sentry.captureCheckIn({
-                    monitorSlug: env.sentry.monitor_slug!,
-                    status: "error"
-                })
-            }
-            return
-        }
+        if (!backupStatus) throw new Error("Backup failed");
         // upload backup
-        const dumpContents = await fsp.readFile(fullpath);
-        await s3.send(new PutObjectCommand({
-            Bucket: env.s3.bucketName,
-            Key: filename,
-            Body: dumpContents,
-            ContentType: 'application/octet-stream'
-        }))
-        console.log(colors.green("backup:"), "Backup uploaded to S3. Keeping latest", env.backups.max_backups, "backups....")
-        // list objects
-        const list = await s3.send(new ListObjectsV2Command({
-            Bucket: env.s3.bucketName
-        }))
+        const uploadStatus = await uploadBackup(fullpath, filename);
+        if (!uploadStatus) throw new Error("Upload of backup failed");
         // delete old backups
-        const sortedTmstpDesc = list.Contents!.filter(b => b.Key!.includes(`${env.backups.file_identifier ? `.${env.backups.file_identifier}` : ""}.dump`)).sort((a, b) => {
-            return (a.LastModified!.getTime() > b.LastModified!.getTime()) ? -1 : 1
-        })
-        const toDelete = sortedTmstpDesc.slice(env.backups.max_backups)
-        
-        const deletePromises = toDelete.map(async object => {
-            try {
-                const fileVersions = await s3.send(new ListObjectVersionsCommand({
-                    Bucket: env.s3.bucketName,
-                    Prefix: object.Key!
-                }))
-                for await (const version of fileVersions.Versions!) {
-                    await s3.send(new DeleteObjectCommand({
-                        Bucket: env.s3.bucketName,
-                        Key: object.Key!,
-                        VersionId: version.VersionId
-                    }))
-                }
-                
-            } catch (error) {
-                await s3.send(new DeleteObjectCommand({
-                    Bucket: env.s3.bucketName,
-                    Key: object.Key!
-                }))
-            }
-
-            
-             
-            console.log(colors.green("backup:"), "Deleted old backup", object.Key)
-        })
-        await Promise.all(deletePromises)
+        const cleanupStatus = await deleteOldBackups();
+        if (!cleanupStatus) throw new Error("Cleanup of old backups failed");
         // notify
         console.log(colors.green("backup:"), "Backup completed successfully.")
         console.log(colors.cyan("-".repeat(15)))
