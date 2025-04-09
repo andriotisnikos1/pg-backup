@@ -1,10 +1,11 @@
 import { env } from "./central.config"
 import clild_process from "child_process"
 import colors from "@colors/colors"
+import * as Sentry from "@sentry/node"
 
-export default async function backup(backupPath: string, filename: string) {
+async function attemptBackup(backupPath: string, filename: string) {
     try {
-        return await new Promise((resolve, reject) => {
+        return await new Promise<boolean>((resolve, reject) => {
             const dump = clild_process.spawn('pg_dump', [
                 "-F", // custom format
                 "c",
@@ -30,4 +31,16 @@ export default async function backup(backupPath: string, filename: string) {
         return false
     }
 
+}
+
+export default async function backup(fullpath: string, filename: string) {
+    try {
+        const backupStatus = await attemptBackup(fullpath, filename);
+        if (backupStatus) return true
+        console.error(colors.red("error:"), "Backup failed. Exiting...");
+        return false
+    } catch (error) {
+        console.error(colors.red("error:"), error)
+        return false
+    }
 }
