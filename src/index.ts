@@ -34,7 +34,7 @@ cron.schedule(env.backups.cron_schedule, async () => {
         // notify start
         console.log(colors.green("backup:"), "Starting backup...");
         // get backup
-        const backupStatus = await backup(fullpath, filename);
+        const backupStatus = await backup(fullpath);
         if (!backupStatus) throw new Error("Backup failed");
         // upload backup
         const uploadStatus = await uploadBackup(fullpath, filename);

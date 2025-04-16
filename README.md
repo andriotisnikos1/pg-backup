@@ -23,6 +23,9 @@ S3_BUCKET=
 # Backups Configuration
 BACKUPS_CRON_SCHEDULE= # "0 0 * * *" (required)
 BACKUPS_MAX_KEEP_COUNT= # the number of latest backups to keep (defaults to 5)
+# whether to use pg_dumpall or pg_dump
+# pg_dumpall is used for backups of the entire database cluster
+BACKUPS_USE_PG_DUMPALL= # "true" | "false" (defaults to "false")
 
 # a unique identifier for the backup file. 
 # the file format with identifier is

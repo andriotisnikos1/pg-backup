@@ -12,7 +12,8 @@ const envSchema = z.object({
     backups: z.object({
         cron_schedule: z.string().min(5),
         max_backups: z.number().optional().default(5),
-        file_identifier: z.string().optional()
+        file_identifier: z.string().optional(),
+        use_dumpall: z.boolean().default(false),
     }),
     postgres: z.object({
         url: z.string().min(15),
@@ -36,7 +37,8 @@ export const env = await envSchema.parseAsync({
     backups: {
         cron_schedule: process.env.BACKUPS_CRON_SCHEDULE!,
         max_backups: process.env.BACKUPS_MAX_KEEP_COUNT ? parseInt(process.env.BACKUPS_MAX_KEEP_COUNT) : 5,
-        file_identifier: process.env.BACKUPS_FILE_IDENTIFIER
+        file_identifier: process.env.BACKUPS_FILE_IDENTIFIER,
+        use_dumpall: process.env.BACKUPS_USE_PG_DUMPALL === 'true' ? true : false,
     },
     postgres: {
         url: process.env.POSTGRES_URL!,
